@@ -21,6 +21,7 @@
 
     <%= render "index/popup" %>
     <div style="display: none" readonly>
+    
       <%= form_with url: "/create_workorder", id: "workorder_form", method: :post do |form| %> 
         <%= form.text_field :w_begin %>
         <%= form.text_field :w_end %>
