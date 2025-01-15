@@ -1,5 +1,8 @@
 class IndexController < ApplicationController
   attr_accessor :headers, :current_table, :min_start_time, :max_start_time
+
+#  @workorder = new Workorder
+
   def index
     # Get all technician records and save their names.
     technician_names = []
@@ -35,7 +38,7 @@ class IndexController < ApplicationController
       # then left-pad their schedule with a free block.
 
       if current_technician_times.getvalue(0, 0) > min_start_time
-        puts current_technician_times.getvalue(0, 0)
+
         first_workorder_time = current_technician_times.getvalue(0, 0)
         # Get the number of minutes starting at 6 AM until their first appointment.
         first_available_block = (first_workorder_time - min_start_time) / 1.minutes
@@ -46,6 +49,7 @@ class IndexController < ApplicationController
       # Iterate through this technician's active workorders
       # to find any availabilities in their schedule.
       current_technician_times.each.with_index { |pair, i|
+
         # Get start time for current workorder and add the
         # workorder's duration to get its ending time.
         start_time = pair["date"]
@@ -79,6 +83,7 @@ class IndexController < ApplicationController
 
     params[:min_start_time] = min_start_time
     params[:max_end_time] = max_end_time
+    
     respond_to do |format|
       format.html { render :index }
     end
@@ -88,5 +93,17 @@ class IndexController < ApplicationController
       format.html { render :show }
     end
     # Get a list of technician names as headers
+  end
+  def create_workorder
+    start_time = (Time.strptime ("10/01/2024 " + params[:w_begin]), "%m/%d/%Y %H:%M:%S")  - 5.hours
+    duration = ((Time.strptime("10/01/2024 " + params[:w_end] ,"%m/%d/%Y %H:%M:%S") -5.hours)- start_time).minutes / 3600;
+    
+    entry = Workorder.create(
+      id: 13131, technician_id: 1, location_id: 1,
+      date: start_time.to_s, duration: duration, price: 0.0)
+    entry.save!
+
+    return index
+    
   end
 end

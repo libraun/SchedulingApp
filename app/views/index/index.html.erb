@@ -20,6 +20,12 @@
   <div data-controller="popup" style="display: flex; align-items: center; position: absolute">
 
     <%= render "index/popup" %>
+    <%= form_with url: "/create_workorder", id: "workorder_form", method: :post do |form| %> 
+      <%= form.text_field :w_begin %>
+      <%= form.text_field :w_end %>
+      <%= form.text_field :name%> 
+      <%= form.submit %>
+    <% end %>
 
     <div data-popup-target="grid" style="display: flex">
 

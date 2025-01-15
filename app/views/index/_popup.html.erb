@@ -3,7 +3,10 @@
   <div class="popup-window">
 
     <button class="close-popup-button" data-action="click->popup#hide">x</button>
-    <p data-popup-target="blockStart">Begins: </p>
-    <p data-popup-target="blockEnd">Ends: </p>
+    
+    <p id="block_start" data-popup-target="blockStart">Begins:  </p>
+    <p id="block_end" data-popup-target="blockEnd">Ends: </p>
+
+    <button id="schedule-workorder" data-action="click->popup#create_workorder">Schedule Workorder</button>
   </div>
 </div>

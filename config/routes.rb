@@ -12,6 +12,8 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "index#index"
   get "show" => "index#show"
+  post "create_workorder" => "index#create_workorder"
+  get "create_workorder" => "index#index"
 
   # get "index", to: "index#show", as: "/show"
 end
