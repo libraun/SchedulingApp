@@ -20,13 +20,14 @@
   <div data-controller="popup" style="display: flex; align-items: center; position: absolute">
 
     <%= render "index/popup" %>
-    <%= form_with url: "/create_workorder", id: "workorder_form", method: :post do |form| %> 
-      <%= form.text_field :w_begin %>
-      <%= form.text_field :w_end %>
-      <%= form.text_field :name%> 
-      <%= form.submit %>
-    <% end %>
-
+    <div style="display: none" readonly>
+      <%= form_with url: "/create_workorder", id: "workorder_form", method: :post do |form| %> 
+        <%= form.text_field :w_begin %>
+        <%= form.text_field :w_end %>
+        <%= form.text_field :name%> 
+        <%= form.submit %>
+      <% end %>
+    </div>
     <div data-popup-target="grid" style="display: flex">
 
       <div class="table-col">
@@ -46,12 +47,12 @@
         <% end %>
       </div>
 
-      <% params[:headers].each do |header| %>
-        <div class="table-col">
+      <% params[:technician_names].each.with_index do |technician_name, idx| %>
+        <div class="table-col" value=<%=idx+1%>>
 
-          <h3 class="table-header"><%=header %></h3>
+          <h3 class="table-header"><%= technician_name %></h3>
 
-          <% params[:current_table][header].each do |tuple| %>
+          <% params[:workorders][technician_name].each do |tuple| %>
 
             <% if tuple != nil %>
 
@@ -61,10 +62,11 @@
               <% block_start = tuple[1].to_s.split(" ")[1] %>
               <% block_end = tuple[2].to_s.split(" ")[1] %>
 
-              <% block_interval_str = ([block_start, block_end] * " ").to_s %>
+              <% block_interval_str = [technician_name, block_start, block_end, technician_available] * "="%>
 
               <div class="schedule-block" style="height:<%= tuple[0] %>px; background-color: <%= column_color %>;%>">
                 <button class="schedule-block-button" data-action="click->popup#show" value="<%=block_interval_str %>">
+                  
                   <% if not technician_available  %>
                     Active Workorder From <%=block_start %> Until <%=block_end %>
                   <% else %>

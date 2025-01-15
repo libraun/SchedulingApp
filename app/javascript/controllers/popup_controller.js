@@ -1,47 +1,55 @@
 import { Controller } from "@hotwired/stimulus"
-import { application } from "./application"
 
 // Connects to data-controller="popup"
 export default class extends Controller {
+
   static targets = [
     "popup", "grid",
-    "blockStart", "blockEnd"
+    "blockStart", "blockEnd",
+    "technicianName", "technicianAvailable"
   ]
 
   show() {
     this.popupTarget.style.display = "flex"
 
-    // Intervals: 
-    let intervals = event.target.value.split(" ")
+    let intervals = event.target.value.split("=")
 
-    console.assert(intervals.length === 2)
+    let technicianAvailable = intervals[3]
 
-    this.blockStartTarget.innerText = "Begins: " + intervals[0]
-    this.blockEndTarget.innerText = "Ends: " + intervals[1]
+    this.technicianNameTarget.innerText = intervals[0]
+
+    this.blockStartTarget.innerText = "Begins: " + intervals[1]
+    this.blockEndTarget.innerText = "Ends: " + intervals[2]
+    
+    if (technicianAvailable==="false") {
+      this.technicianAvailableTarget.style.display = "none"
+    } else {
+      this.technicianAvailableTarget.style.display = ""
+    }
   }
 
   hide() {
     this.popupTarget.style.display = "none"
   }
-
+  
   create_workorder() {
-
-    const availableWorkorderStart = document.getElementById("block_start");
-    const availableWorkorderEnd = document.getElementById("block_end");
-
-    const newWorkorderForm = document.getElementById("workorder_form");
     
-    const workorderStart = document.getElementById("w_begin");
-    workorderStart.value = availableWorkorderStart.innerText.split(" ")[1];
+    const availableWorkorderStart = document.getElementById("block_start")
+    const availableWorkorderEnd = document.getElementById("block_end")
+    const technicianName = document.getElementById("technician_name")
+
+    const newWorkorderForm = document.getElementById("workorder_form")
     
-    const workorderEnd = document.getElementById("w_end");
-    workorderEnd.value = availableWorkorderEnd.innerText.split(" ")[1];
+    const workorderStart = document.getElementById("w_begin")
+    workorderStart.value = availableWorkorderStart.innerText.split(" ")[1]
+    
+    const workorderEnd = document.getElementById("w_end")
+    workorderEnd.value = availableWorkorderEnd.innerText.split(" ")[1]
 
-    const assignedWorker = document.getElementById("name");
-    assignedWorker.value = "Bill Keller";
+    const assignedWorker = document.getElementById("name")
+    assignedWorker.value = technicianName.innerText
 
-    console.log(workorderStart.value, workorderEnd.value,)
-
+    // Trigger the create_workorder event in index_controller.rb (there has to be a better way of doing this)
     newWorkorderForm.submit()
   }
 }
