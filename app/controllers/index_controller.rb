@@ -10,11 +10,11 @@ class IndexController < ApplicationController
       all_technician_names.append(technician["name"])
     end
     # Formatted query statement to extract date and duration from workorders by name
-    query = <<~TEXT
+    query = <<~SQL
       SELECT date, duration FROM workorders
         INNER JOIN technicians ON technicians.id = technician_id AND name = '%s'
       ORDER BY (workorders.date);
-    TEXT
+    SQL
 
     # Technicians will not work before this time.
     min_start_time = Time.utc(2024, 10, 1, 6, 0)
@@ -76,6 +76,8 @@ class IndexController < ApplicationController
       }
       records[technician_name] = technician_schedule
     }
+
+    # Set global parameters to be used by index.html.erb
     params[:technician_names] = all_technician_names
     params[:workorders] = records
 
@@ -92,7 +94,6 @@ class IndexController < ApplicationController
     respond_to do |format|
       format.html { render :show }
     end
-    # Get a list of technician names as headers
   end
 
   def create_workorder
@@ -105,11 +106,15 @@ class IndexController < ApplicationController
     technician_id = Technician.where(name: params[:name]).take.id
     
     begin
-      entry = Workorder.create!(
+
+      entry = Workorder.create(
         id: Workorder.all.length+1, technician_id: technician_id, location_id: 1,
         date: start_time.to_s, duration: duration, price: 0.0)
+
       entry.save
+
     rescue ActiveRecord::RecordInvalid => exception
+      
       throw exception
     end
     return index
