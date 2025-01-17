@@ -57,7 +57,9 @@
 
             <% if tuple != nil %>
 
-              <% technician_available = (tuple[3] == 1) ? true : false %>
+              <%= puts tuple[0] %>
+
+              <% technician_available = tuple[3] %>
               <% column_color = technician_available ? "silver" : "mediumseagreen" %>
 
               <% block_start = tuple[1].to_s.split(" ")[1] %>
@@ -65,7 +67,7 @@
 
               <% block_interval_str = [technician_name, block_start, block_end, technician_available] * "="%>
 
-              <div class="schedule-block" style="height:<%= tuple[0] %>px; background-color: <%= column_color %>;%>">
+              <div class="schedule-block" style="height:<%= tuple[0] / 10 %>px; background-color: <%= column_color %>;%>">
                 <button class="schedule-block-button" data-action="click->popup#show" value="<%=block_interval_str %>">
                   
                   <% if not technician_available  %>
