@@ -1,14 +1,24 @@
 <div class="popup-display" data-popup-target="popup">
-
   <div class="popup-window">
 
     <button class="close-popup-button" data-action="click->popup#hide">x</button>
 
-    <p id="technician_name" data-popup-target="technicianName"></p>
-    
-    <p id="block_start" data-popup-target="blockStart">Begins:  </p>
-    <p id="block_end" data-popup-target="blockEnd">Ends: </p>
-    
-    <button id="schedule-workorder" data-popup-target="technicianAvailable" data-action="click->popup#create_workorder">Schedule Workorder</button>
+    <%= form_with url: "/create_workorder", data: {turbo: false}, id: "workorder_form", method: :post do |form| %>
+      <div style="display: flex; flex-direction: row;">
+        <%= form.label :w_begin, "Begins: "%>
+
+        <%= form.text_field :w_begin, :data => {:"popup-target" => 'blockStart'}, :readonly => true %>
+      </div>
+      <div style="display: flex; flex-direction: row; justify-items: center">
+        <%= form.label :w_end, "Ends: "%>
+        <%= form.text_field :w_end, :data => {:"popup-target" => 'blockEnd'}, :readonly => true %>
+      </div>
+      
+      <div style="display: flex; flex-direction: row;">
+        <%= form.label :name, "Ends:" %>
+        <%= form.text_field :name, :data => {:"popup-target" => 'technicianName'}, :readonly => true%> 
+      </div>
+      <%= form.submit :submit, :data => {:"popup-target" => 'technicianAvailable'} %>
+    <% end %>
   </div>
 </div>
