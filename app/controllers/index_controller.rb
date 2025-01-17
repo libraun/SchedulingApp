@@ -47,7 +47,7 @@ class IndexController < ApplicationController
       end
       # Iterate through this technician's active workorders
       # to find any availabilities in their schedule.
-      current_technician_times.each.with_index { |pair, idx|
+      current_technician_times.each.with_index do |pair, idx|
 
         # Get start time for current workorder and add the
         # workorder's duration to get its ending time.
@@ -60,7 +60,7 @@ class IndexController < ApplicationController
         # the offset in minutes from max_end_time to this workorder as the last available block.
         if idx == current_technician_times.ntuples - 1
           next_workorder_start = max_end_time
-        # Else, get the difference between this workorder and the next as the next available block.
+        # Else, save the difference between this workorder and the next as the next available block.
         else
           next_workorder_start = current_technician_times.getvalue(idx+1, 0)
         end
@@ -68,12 +68,12 @@ class IndexController < ApplicationController
         next_available_block_duration = Float((next_workorder_start - current_workorder_end) / 1.minutes)
         # Add this workorder's duration as a non-available block
         technician_schedule.append([ current_workorder_duration, current_workorder_start, current_workorder_end, 0 ])
+        # Add the next
         if next_available_block_duration > 0
 
           technician_schedule.append([ next_available_block_duration, current_workorder_end, next_workorder_start, 1 ])
-          # technician_schedule.append([ next_available_block, end_time, next_start_time, 1 ])
         end
-      }
+      end
       records[technician_name] = technician_schedule
     }
     params[:technician_names] = all_technician_names
@@ -105,10 +105,17 @@ class IndexController < ApplicationController
     technician_id = Technician.where(name: params[:name]).take.id
     
     begin
-      entry = Workorder.create!(
-        id: Workorder.all.length+1, technician_id: technician_id, location_id: 1,
-        date: start_time.to_s, duration: duration, price: 0.0)
-      entry.save
+      entry = Workorder.create(
+          id: Workorder.all.length+1, 
+          technician_id: technician_id, 
+          location_id: 1,
+          date: start_time.to_s, 
+          duration: duration, 
+          price: 0.0
+      )
+      ActiveRecord::Base.transaction do 
+        entry.save!
+      end
     rescue ActiveRecord::RecordInvalid => exception
       throw exception
     end
