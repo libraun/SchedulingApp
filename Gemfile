@@ -1,12 +1,14 @@
 source "https://rubygems.org"
-ruby "3.3.4"
+ruby "3.4.1"
 
+gem 'psych', '~> 5.2.2'
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 7.2.0.rc1"
+gem 'rails', '~> 8.0', '>= 8.0.1'
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"
+gem "yaml", "~> 0.1"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
