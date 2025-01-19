@@ -22,7 +22,7 @@ jobs:
       - name: Set brakeman to user-executable
         run: chmod u+x bin/brakeman
       - name: Install Gem dependencies
-        run: bundle config set frozen false && bundle install
+        run: bin/bundle config set frozen false && bin/bundle install
       - name: Scan for security vulnerabilities in Ruby dependencies
         run: bin/brakeman --no-pager
 
