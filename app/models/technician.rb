@@ -1,1 +1,3 @@
-class Technician < ApplicationRecord; end
+class Technician < ApplicationRecord
+    has_many :workorders
+end

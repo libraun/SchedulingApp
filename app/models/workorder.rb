@@ -1,1 +1,3 @@
-class Workorder < ApplicationRecord; end
+class Workorder < ApplicationRecord
+    belongs_to :technician
+end

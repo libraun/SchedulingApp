@@ -4,87 +4,73 @@ class IndexController < ApplicationController
 #  @workorder = new Workorder
 
   def index
-    # Get all technician records and save their names.
-    all_technician_names = []
-    Technician.all.each do |technician|
-      all_technician_names.append(technician["name"])
-    end
-    # Formatted query statement to extract date and duration from workorders by name
-    query = <<~TEXT
-      SELECT date, duration FROM workorders
-        INNER JOIN technicians ON technicians.id = technician_id AND name = '%s'
-      ORDER BY (workorders.date);
-    TEXT
 
     # Technicians will not work before this time.
-    min_start_time = Time.utc(2024, 10, 1, 6, 0)
+    params[:min_start_time] = Time.utc(2024, 10, 1, 6, 0)
     # Technicians will not work after this time.
-    max_end_time = Time.utc(2024, 10, 1, 19, 0)
+    params[:max_end_time] = Time.utc(2024, 10, 1, 19, 0)
 
-    # "records" maps each technician name to a list of "time blocks", also containing a boolean
-    # value indicating whether or not that block has been scheduled (i.e., is a workorder)
-    records = {}
+    params[:workorders] = {}
     # Iterate through technician names to build a schedule for each.
-    all_technician_names.each { |technician_name|
+    Technician.left_joins(:workorders).each { |technician_data|
+
       # Execute formatted query, getting all workorders for this technician.
-      current_technician_times = ActiveRecord::Base.connection.execute(query % technician_name)
+      technician_workorders = technician_data.workorders
 
       # A list containing tuple elements that represent blocks in technician's schedule
-      technician_schedule = []
-
-      # If technician is available b/w "min_work_time" & their first workorder,
-      # then left-pad their schedule with a free block.
-      if current_technician_times.getvalue(0, 0) > min_start_time
-
-        first_workorder_time = current_technician_times.getvalue(0, 0)
+      params[:workorders][technician_data.name] = []
+      # If technician is available b/w "min_work_time" & their first workorder, pad their schedule with a free block.
+      if technician_workorders.first.date > params[:min_start_time]
         # Get the number of minutes starting at 6 AM until their first appointment.
-        first_available_block = (first_workorder_time - min_start_time) / 1.minutes
-        
-        if first_available_block.to_i > 0
-          
-          technician_schedule.append([ first_available_block, min_start_time, first_workorder_time, 1 ])
+        params[:workorders][technician_data.name].append([ 
+            get_minutes_difference(technician_workorders.first.date, params[:min_start_time]), 
+            params[:min_start_time], 
+            technician_workorders.first.date, 
+            nil 
+        ])
         end
       end
       # Iterate through this technician's active workorders
       # to find any availabilities in their schedule.
-      current_technician_times.each.with_index do |pair, idx|
+      technician_workorders.workorders.each.with_index do |workorder, idx|
 
         # Get start time for current workorder and add the
-        # workorder's duration to get its ending time.
-        current_workorder_start = pair["date"]
-        current_workorder_duration = Float(pair["duration"])
+        current_workorder_end = workorder.date + workorder.duration.minutes
 
-        current_workorder_end = current_workorder_start + current_workorder_duration.minutes
-
-        # If this is the last workorder in the technicians queue, then get
-        # the offset in minutes from max_end_time to this workorder as the last available block.
-        if idx == current_technician_times.ntuples - 1
-          next_workorder_start = max_end_time
-        # Else, save the difference between this workorder and the next as the next available block.
+        # Check if workorder is this technician's last; if true, add an available block b/w workorder.end
+        # and max_end_time.
+        if workorder == technician_workorders.last
+          next_workorder_start = params[:max_end_time]
         else
-          next_workorder_start = current_technician_times.getvalue(idx+1, 0)
+          next_workorder_start = technician_workorders.limit(1).offset(idx + 1).first.date
         end
-        # Save the difference b/w this workorder's starting time and the next workorder's start time as available block
-        next_available_block_duration = Float((next_workorder_start - current_workorder_end) / 1.minutes)
+        
         # Add this workorder's duration as a non-available block
-        technician_schedule.append([ current_workorder_duration, current_workorder_start, current_workorder_end, 0 ])
+        params[:workorders][technician_data.name].append([ 
+            workorder.date, 
+            get_minutes_difference(next_workorder_start, current_workorder_end), 
+            workorder.date + workorder.duration.minutes, 
+            workorder.location
+        ])
         # Add the next
         if next_available_block_duration > 0
-
-          technician_schedule.append([ next_available_block_duration, current_workorder_end, next_workorder_start, 1 ])
+          params[:workorders][technician.name].append([ 
+              next_available_block_duration, 
+              current_workorder_end, 
+              next_workorder_start, 
+              nil 
+          ])
         end
       end
-      records[technician_name] = technician_schedule
     }
-    params[:technician_names] = all_technician_names
-    params[:workorders] = records
-
-    params[:min_start_time] = min_start_time
-    params[:max_end_time] = max_end_time
     
     respond_to do |format|
       format.html { render :index }
     end
+  end
+
+  def get_minutes_difference(time_a, time_b) 
+    time
   end
 
   def show
@@ -121,5 +107,11 @@ class IndexController < ApplicationController
     end
     return index
     
+  end
+
+  private
+
+  def get_minutes_difference(time_a, time_b) 
+    (time_a - time_b) / 1.minutes
   end
 end
