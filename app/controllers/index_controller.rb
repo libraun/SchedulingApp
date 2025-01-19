@@ -68,11 +68,7 @@ class IndexController < ApplicationController
       format.html { render :index }
     end
   end
-
-  def get_minutes_difference(time_a, time_b) 
-    time
-  end
-
+  
   def show
 
     respond_to do |format|
