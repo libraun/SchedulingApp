@@ -28,7 +28,6 @@ class IndexController < ApplicationController
             technician_workorders.first.date, 
             nil 
         ])
-        end
       end
       # Iterate through this technician's active workorders
       # to find any availabilities in their schedule.
@@ -68,7 +67,7 @@ class IndexController < ApplicationController
       format.html { render :index }
     end
   end
-  
+
   def show
 
     respond_to do |format|
